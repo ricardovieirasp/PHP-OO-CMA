@@ -1,9 +1,10 @@
 <?php
+namespace Rvinfo\Banco\Modelo\Conta;
 
-class Conta {
+abstract class Conta {
     // definir dados da conta
     private Titular $titular;
-    private float $saldo = 0;
+    protected float $saldo = 0;
     private static $numeroContas = 0;
 
     public function __construct(Titular $titular) {
@@ -18,12 +19,14 @@ class Conta {
     }
 
     public function saca(float $valorASacar) {
-        if ($valorASacar > $this->saldo) {
+        $tarifaSAque = $valorASacar * $this->percentualTarifas();
+        $valorSaque = $valorASacar + $tarifaSAque;
+        if ($valorSaque > $this->saldo) {
             echo "Saldo indisponível";
             return;
         }
 
-        $this->saldo -= $valorASacar;
+        $this->saldo -= $valorSaque;
     }
 
     public function deposita(float $valorADepositar):void {
@@ -35,22 +38,12 @@ class Conta {
         $this->saldo += $valorADepositar;
     }
 
-    public function transfere(float $valorATransferir, Conta $contaDestino) : void {
-        if ($valorATransferir > $this->saldo) {
-            echo "Saldo indisponível";
-            return;
-        }
-
-        $this->sacar($valorATransferir);
-        $contaDestino->depositar($valorATransferir);
-    }
-
     public function recuperaSaldo():float {
         return $this->saldo;
     }
 
     public function recuperaDados():string {
-        return '|CPF: ' . $this->recuperaCpfTitular() .'|Nome: '. $this->recuperaNomeTitular() .'|Saldo: ' . $this->recuperaSaldo().'|' . PHP_EOL;
+        return '|CPF: ' . $this->recuperaCpfTitular() .'|Nome: '. $this->recuperaNomeTitular() .'|Saldo: ' . $this->recuperaSaldo().'|' . $this->titular->recuperaEndereco() .  '|' . PHP_EOL;
     }
 
     public function recuperaNomeTitular():string {
@@ -64,5 +57,7 @@ class Conta {
     public static function recuperaNumeroDeContas() : int {
         return Conta::$numeroContas;
     }
+
+    abstract protected function percentualTarifas(): float;
 
 }
